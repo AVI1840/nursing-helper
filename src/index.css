@@ -1,0 +1,363 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Nursing 360 Design System - GovTech Accessible */
+
+@layer base {
+  :root {
+    /* Core GovTech Blue */
+    --background: 210 40% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Primary - Bituach Leumi Blue */
+    --primary: 207 100% 32%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Soft Blue */
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 207 100% 32%;
+
+    /* Muted - Slate tones */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent - Money Amber */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success Green */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 207 100% 32%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(207 100% 32%) 0%, hsl(207 100% 42%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    --gradient-money: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(45 93% 47%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 55%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(215 25% 15% / 0.1), 0 2px 4px -2px hsl(215 25% 15% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(215 25% 15% / 0.1), 0 4px 6px -4px hsl(215 25% 15% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(215 25% 15% / 0.1), 0 8px 10px -6px hsl(215 25% 15% / 0.1);
+    --shadow-card: 0 4px 20px -4px hsl(207 100% 32% / 0.15);
+    --shadow-button: 0 4px 14px 0 hsl(207 100% 32% / 0.35);
+    --shadow-money: 0 4px 14px 0 hsl(38 92% 50% / 0.35);
+
+    /* Sidebar - keeping defaults */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 25% 10%;
+    --foreground: 210 40% 98%;
+
+    --card: 215 25% 13%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 215 25% 13%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 207 90% 54%;
+    --primary-foreground: 215 25% 10%;
+
+    --secondary: 215 25% 20%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 215 25% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 207 90% 54%;
+    
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    direction: rtl;
+    font-family: 'Heebo', sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Level selection card */
+  .level-card {
+    @apply relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-border bg-card transition-all duration-300 cursor-pointer min-h-[140px];
+    box-shadow: var(--shadow-md);
+  }
+
+  .level-card:hover {
+    @apply border-primary/50 scale-[1.02];
+    box-shadow: var(--shadow-card);
+  }
+
+  .level-card.selected {
+    @apply border-primary bg-primary/5;
+    box-shadow: var(--shadow-card);
+  }
+
+  .level-card .level-number {
+    @apply text-4xl font-extrabold text-primary mb-2;
+  }
+
+  .level-card .level-hours {
+    @apply text-lg text-muted-foreground;
+  }
+
+  /* Budget bar */
+  .budget-bar {
+    @apply w-full h-4 rounded-full overflow-hidden;
+    background: hsl(var(--secondary));
+  }
+
+  .budget-bar-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: var(--gradient-hero);
+  }
+
+  .budget-bar-fill.warning {
+    background: var(--gradient-money);
+  }
+
+  /* Right benefit card */
+  .right-card {
+    @apply relative flex flex-col p-6 rounded-2xl border border-border bg-card transition-all duration-300;
+    box-shadow: var(--shadow-md);
+  }
+
+  .right-card:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .right-card .icon-circle {
+    @apply w-14 h-14 rounded-full flex items-center justify-center mb-4;
+    background: var(--gradient-hero);
+  }
+
+  .right-card .icon-circle.money {
+    background: var(--gradient-money);
+  }
+
+  .right-card .icon-circle.success {
+    background: var(--gradient-success);
+  }
+
+  /* Value badge */
+  .value-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold;
+    background: hsl(var(--accent) / 0.15);
+    color: hsl(var(--accent));
+  }
+
+  /* Large accessible button */
+  .btn-accessible {
+    @apply inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300;
+    min-height: 56px;
+  }
+
+  .btn-accessible.primary {
+    @apply text-primary-foreground;
+    background: var(--gradient-hero);
+    box-shadow: var(--shadow-button);
+  }
+
+  .btn-accessible.primary:hover {
+    @apply opacity-90 scale-[1.02];
+  }
+
+  .btn-accessible.secondary {
+    @apply bg-secondary text-secondary-foreground;
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-accessible.secondary:hover {
+    @apply bg-secondary/80;
+  }
+
+  /* Toggle switch accessible */
+  .toggle-accessible {
+    @apply relative inline-flex items-center h-8 w-16 rounded-full transition-colors duration-300 cursor-pointer;
+  }
+
+  /* Step indicator */
+  .step-indicator {
+    @apply flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold transition-all duration-300;
+  }
+
+  .step-indicator.active {
+    @apply text-primary-foreground;
+    background: var(--gradient-hero);
+  }
+
+  .step-indicator.completed {
+    @apply bg-success text-success-foreground;
+  }
+
+  .step-indicator.pending {
+    @apply bg-secondary text-muted-foreground;
+  }
+
+  /* Service toggle card */
+  .service-toggle {
+    @apply flex items-center justify-between p-4 rounded-xl border border-border bg-card transition-all duration-200;
+  }
+
+  .service-toggle.active {
+    @apply border-primary bg-primary/5;
+  }
+
+  /* Counter buttons */
+  .counter-btn {
+    @apply w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-200;
+    background: hsl(var(--secondary));
+  }
+
+  .counter-btn:hover:not(:disabled) {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .counter-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+}
+
+@layer utilities {
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-lg;
+  }
+
+  /* Text gradient */
+  .text-gradient {
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-money {
+    background: var(--gradient-money);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Smooth fade animations */
+  .animate-fade-up {
+    animation: fadeUp 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  .animate-pulse-soft {
+    animation: pulseSoft 2s ease-in-out infinite;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulseSoft {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* RTL specific utilities */
+  .rtl-flip {
+    transform: scaleX(-1);
+  }
+}

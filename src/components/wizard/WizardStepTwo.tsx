@@ -17,16 +17,18 @@ const getDayCenterRate = (level: number): number => level <= 3 ? 2.0 : 2.75;
 const getCashCap = (level: number, totalHours: number): number =>
   level === 1 ? totalHours : Math.floor(totalHours / 3);
 
-const EXTRAS = { community: 0.5, absorbency: 0.5, panicButton: 0.25 };
+const EXTRAS = { community: 0.5, panicButton: 0.25 };
+// מוצרי ספיגה - ללא ניכוי שעות מהסל (זכות נפרדת)
+const ABSORBENCY_COST = 0;
 
-// מוצרי ספיגה - זכאות לפי רמה (ביטוח לאומי 2025)
-const ABSORBENCY_BY_LEVEL: Record<number, string> = {
-  1: 'חיתולים בסיסיים - עד 60 יח׳ לחודש',
-  2: 'חיתולים בסיסיים - עד 60 יח׳ לחודש',
-  3: 'חיתולים + מגבונים - עד 90 יח׳ לחודש',
-  4: 'חיתולים + מגבונים + כפפות - עד 120 יח׳ לחודש',
-  5: 'ערכה מלאה - עד 150 יח׳ לחודש',
-  6: 'ערכה מלאה מורחבת - עד 180 יח׳ לחודש',
+// מוצרי ספיגה - זכאות מפורטת לפי רמה (ביטוח לאומי 2025)
+const ABSORBENCY_BY_LEVEL: Record<number, { label: string; items: string[]; monthly: string }> = {
+  1: { label: 'חיתולים בסיסיים', items: ['חיתולים'], monthly: 'עד 60 יח׳ לחודש' },
+  2: { label: 'חיתולים בסיסיים', items: ['חיתולים'], monthly: 'עד 60 יח׳ לחודש' },
+  3: { label: 'חיתולים + מגבונים', items: ['חיתולים', 'מגבונים לחים'], monthly: 'עד 90 יח׳ לחודש' },
+  4: { label: 'ערכה מורחבת', items: ['חיתולים', 'מגבונים לחים', 'כפפות'], monthly: 'עד 120 יח׳ לחודש' },
+  5: { label: 'ערכה מלאה', items: ['חיתולים', 'מגבונים', 'כפפות', 'פדים'], monthly: 'עד 150 יח׳ לחודש' },
+  6: { label: 'ערכה מלאה מורחבת', items: ['חיתולים', 'מגבונים', 'כפפות', 'פדים', 'סדינים חד-פעמיים'], monthly: 'עד 180 יח׳ לחודש' },
 };
 
 interface StepperButtonProps {
@@ -105,16 +107,16 @@ const WizardStepTwo = () => {
   const extrasCost = useMemo(() => {
     let cost = 0;
     if (community) cost += EXTRAS.community;
-    if (absorbency) cost += EXTRAS.absorbency;
+    // absorbency = 0 cost (ABSORBENCY_COST), no deduction from basket
     if (panicButton && !community) cost += EXTRAS.panicButton;
     return cost;
-  }, [community, absorbency, panicButton]);
+  }, [community, panicButton]);
 
   const dayCenterCost = dayCenterDays * dayCenterRate;
   const usedHours = dayCenterCost + cashHours + caregiverHours + extrasCost;
   const remainingHours = Math.max(0, totalHours - usedHours);
   const allocatedPercent = Math.min((usedHours / totalHours) * 100, 100);
-  const canProceed = true; // Always allow proceeding; show warning if < 70%
+  const canProceed = true; // Always allow proceeding
   const hasMinAllocation = allocatedPercent >= 70;
   const canIncrease = remainingHours > 0;
 
@@ -146,15 +148,16 @@ const WizardStepTwo = () => {
   };
 
   const handleExtraToggle = (extra: 'community' | 'absorbency' | 'panicButton', checked: boolean) => {
+    if (extra === 'absorbency') {
+      setAbsorbency(checked);
+      return;
+    }
     const cost = extra === 'panicButton' && community ? 0 : EXTRAS[extra];
     if (checked && cost > remainingHours) return;
     switch (extra) {
       case 'community':
         setCommunity(checked);
         if (checked) setPanicButton(false);
-        break;
-      case 'absorbency':
-        setAbsorbency(checked);
         break;
       case 'panicButton':
         if (!community) setPanicButton(checked);
@@ -404,38 +407,42 @@ const WizardStepTwo = () => {
               </Tooltip>
             </div>
 
-            {/* מוצרי ספיגה - מדויק לפי רמה */}
+            {/* מוצרי ספיגה - ללא ניכוי שעות */}
             <div
               className={cn("p-4 rounded-xl border-2 transition-all cursor-pointer",
-                absorbency ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/30' : 'border-border hover:border-purple-200',
-                remainingHours < EXTRAS.absorbency && !absorbency && 'opacity-50 cursor-not-allowed')}
+                absorbency ? 'border-teal-400 bg-teal-50 dark:bg-teal-950/30' : 'border-border hover:border-teal-200')}
               onClick={() => handleExtraToggle('absorbency', !absorbency)}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                  <Package className="w-5 h-5 text-teal-600 flex-shrink-0" />
                   <div>
                     <p className="font-medium">מוצרי ספיגה</p>
-                    <p className="text-xs text-muted-foreground">-{EXTRAS.absorbency} שעות</p>
+                    <span className="inline-block text-xs font-semibold text-teal-700 bg-teal-100 dark:bg-teal-900/50 px-2 py-0.5 rounded-full">
+                      ללא ניכוי שעות ✓
+                    </span>
                   </div>
                 </div>
                 <Switch checked={absorbency}
                   onCheckedChange={(c) => handleExtraToggle('absorbency', c)}
-                  disabled={remainingHours < EXTRAS.absorbency && !absorbency}
-                  className="data-[state=checked]:bg-purple-500" />
+                  className="data-[state=checked]:bg-teal-500" />
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
-                    <Info className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{ABSORBENCY_BY_LEVEL[safeLevel]}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="font-medium mb-1">זכאות לרמה {safeLevel}:</p>
-                  <p>{ABSORBENCY_BY_LEVEL[safeLevel]}</p>
-                  <p className="mt-1 text-xs opacity-75">אספקה חודשית עד הבית. הכמות משתנה לפי רמת הסיעוד.</p>
-                </TooltipContent>
-              </Tooltip>
+
+              {/* פירוט לפי רמה */}
+              <div className="mt-3 p-3 rounded-lg bg-teal-50/80 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700">
+                <p className="text-xs font-semibold text-teal-800 dark:text-teal-300 mb-1.5">
+                  {ABSORBENCY_BY_LEVEL[safeLevel].label} — {ABSORBENCY_BY_LEVEL[safeLevel].monthly}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {ABSORBENCY_BY_LEVEL[safeLevel].items.map((item) => (
+                    <span key={item} className="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-teal-900/50 border border-teal-200 dark:border-teal-600 text-teal-700 dark:text-teal-300">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-teal-600 dark:text-teal-400 mt-2">
+                  📦 אספקה חודשית עד הבית
+                </p>
+              </div>
             </div>
 
             {/* לחצן מצוקה */}

@@ -65,7 +65,7 @@ export const RATES: Rates = {
   daycare_high: 2.75,    // מרכז יום - Levels 4-6 deduction per visit (UPDATED)
   community: 0.5,        // קהילה תומכת - fixed deduction
   panic_button: 0.25,    // לחצן מצוקה
-  absorbency: 0.5        // מוצרי ספיגה (Average)
+  absorbency: 0          // מוצרי ספיגה - ללא ניכוי שעות, זכות נפרדת מחוץ לסל
 };
 
 export const ANCILLARY_RIGHTS: AncillaryRight[] = [

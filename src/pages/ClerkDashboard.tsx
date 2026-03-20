@@ -33,7 +33,7 @@ const ClerkDashboard = () => {
   const [eligibilityType, setEligibilityType] = useState<'permanent' | 'temporary'>('permanent');
   const [dependencyScore, setDependencyScore] = useState('');
 
-  const baseUrl = window.location.origin;
+  const baseUrl = `${window.location.origin}/nursing-helper`;
   
   // Build URL with new params
   const generatedUrl = name && level && yearOfBirth

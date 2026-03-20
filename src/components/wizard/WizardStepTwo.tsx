@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { calcAbsorbencyHours, ABSORBENCY_BY_LEVEL, ABSORBENCY_PRODUCTS } from '@/data/nursingData';
 
 const LEVEL_HOURS: Record<number, number> = { 1: 5.5, 2: 10, 3: 17, 4: 21, 5: 26, 6: 30 };
 
@@ -18,18 +19,7 @@ const getCashCap = (level: number, totalHours: number): number =>
   level === 1 ? totalHours : Math.floor(totalHours / 3);
 
 const EXTRAS = { community: 0.5, panicButton: 0.25 };
-// מוצרי ספיגה - ללא ניכוי שעות מהסל (זכות נפרדת)
-const ABSORBENCY_COST = 0;
-
-// מוצרי ספיגה - זכאות מפורטת לפי רמה (ביטוח לאומי 2025)
-const ABSORBENCY_BY_LEVEL: Record<number, { label: string; items: string[]; monthly: string }> = {
-  1: { label: 'חיתולים בסיסיים', items: ['חיתולים'], monthly: 'עד 60 יח׳ לחודש' },
-  2: { label: 'חיתולים בסיסיים', items: ['חיתולים'], monthly: 'עד 60 יח׳ לחודש' },
-  3: { label: 'חיתולים + מגבונים', items: ['חיתולים', 'מגבונים לחים'], monthly: 'עד 90 יח׳ לחודש' },
-  4: { label: 'ערכה מורחבת', items: ['חיתולים', 'מגבונים לחים', 'כפפות'], monthly: 'עד 120 יח׳ לחודש' },
-  5: { label: 'ערכה מלאה', items: ['חיתולים', 'מגבונים', 'כפפות', 'פדים'], monthly: 'עד 150 יח׳ לחודש' },
-  6: { label: 'ערכה מלאה מורחבת', items: ['חיתולים', 'מגבונים', 'כפפות', 'פדים', 'סדינים חד-פעמיים'], monthly: 'עד 180 יח׳ לחודש' },
-};
+// מוצרי ספיגה - עלות מחושבת דינמית לפי BL2625 (calcAbsorbencyHours)
 
 interface StepperButtonProps {
   onClick: () => void;
@@ -104,13 +94,16 @@ const WizardStepTwo = () => {
   const [absorbency, setAbsorbency] = useState(allocation.absorbency || false);
   const [panicButton, setPanicButton] = useState(allocation.panicButton || false);
 
+  // עלות מוצרי ספיגה מחושבת לפי BL2625 (שעות חודשיות)
+  const absorbencyCost = useMemo(() => calcAbsorbencyHours(safeLevel), [safeLevel]);
+
   const extrasCost = useMemo(() => {
     let cost = 0;
     if (community) cost += EXTRAS.community;
-    // absorbency = 0 cost (ABSORBENCY_COST), no deduction from basket
+    if (absorbency) cost += absorbencyCost;
     if (panicButton && !community) cost += EXTRAS.panicButton;
     return cost;
-  }, [community, panicButton]);
+  }, [community, absorbency, panicButton, absorbencyCost]);
 
   const dayCenterCost = dayCenterDays * dayCenterRate;
   const usedHours = dayCenterCost + cashHours + caregiverHours + extrasCost;
@@ -149,6 +142,7 @@ const WizardStepTwo = () => {
 
   const handleExtraToggle = (extra: 'community' | 'absorbency' | 'panicButton', checked: boolean) => {
     if (extra === 'absorbency') {
+      if (checked && absorbencyCost > remainingHours) return; // אין מספיק שעות
       setAbsorbency(checked);
       return;
     }
@@ -407,41 +401,62 @@ const WizardStepTwo = () => {
               </Tooltip>
             </div>
 
-            {/* מוצרי ספיגה - ללא ניכוי שעות */}
+            {/* מוצרי ספיגה - עלות לפי BL2625 */}
             <div
               className={cn("p-4 rounded-xl border-2 transition-all cursor-pointer",
-                absorbency ? 'border-teal-400 bg-teal-50 dark:bg-teal-950/30' : 'border-border hover:border-teal-200')}
+                absorbency ? 'border-teal-400 bg-teal-50 dark:bg-teal-950/30' : 'border-border hover:border-teal-200',
+                remainingHours < absorbencyCost && !absorbency && 'opacity-50 cursor-not-allowed')}
               onClick={() => handleExtraToggle('absorbency', !absorbency)}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Package className="w-5 h-5 text-teal-600 flex-shrink-0" />
                   <div>
                     <p className="font-medium">מוצרי ספיגה</p>
-                    <span className="inline-block text-xs font-semibold text-teal-700 bg-teal-100 dark:bg-teal-900/50 px-2 py-0.5 rounded-full">
-                      ללא ניכוי שעות ✓
-                    </span>
+                    <p className="text-xs text-teal-700 font-semibold">
+                      -{absorbencyCost.toFixed(2)} שע׳ (לפי BL2625)
+                    </p>
                   </div>
                 </div>
                 <Switch checked={absorbency}
                   onCheckedChange={(c) => handleExtraToggle('absorbency', c)}
+                  disabled={remainingHours < absorbencyCost && !absorbency}
                   className="data-[state=checked]:bg-teal-500" />
               </div>
 
               {/* פירוט לפי רמה */}
-              <div className="mt-3 p-3 rounded-lg bg-teal-50/80 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700">
+              <div className="mt-2 p-3 rounded-lg bg-teal-50/80 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700">
                 <p className="text-xs font-semibold text-teal-800 dark:text-teal-300 mb-1.5">
-                  {ABSORBENCY_BY_LEVEL[safeLevel].label} — {ABSORBENCY_BY_LEVEL[safeLevel].monthly}
+                  {ABSORBENCY_BY_LEVEL[safeLevel].label}
                 </p>
-                <div className="flex flex-wrap gap-1">
-                  {ABSORBENCY_BY_LEVEL[safeLevel].items.map((item) => (
-                    <span key={item} className="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-teal-900/50 border border-teal-200 dark:border-teal-600 text-teal-700 dark:text-teal-300">
-                      {item}
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {ABSORBENCY_BY_LEVEL[safeLevel].products.map((p) => (
+                    <span key={p.key} className="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-teal-900/50 border border-teal-200 dark:border-teal-600 text-teal-700 dark:text-teal-300">
+                      {ABSORBENCY_PRODUCTS[p.key].name} × {p.qty}
                     </span>
                   ))}
                 </div>
-                <p className="text-xs text-teal-600 dark:text-teal-400 mt-2">
-                  📦 אספקה חודשית עד הבית
-                </p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-xs text-teal-600 cursor-help">
+                      <Info className="w-3 h-3" />
+                      <span>
+                        עלות חודשית: ~{ABSORBENCY_BY_LEVEL[safeLevel].products.reduce((s, p) => s + p.qty * ABSORBENCY_PRODUCTS[p.key].unitPrice, 0).toFixed(0)} ₪ → {absorbencyCost.toFixed(2)} שע׳
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-right" dir="rtl">
+                    <p className="font-semibold mb-2">חישוב לפי BL/2625:</p>
+                    {ABSORBENCY_BY_LEVEL[safeLevel].products.map((p) => (
+                      <p key={p.key} className="text-xs">
+                        {ABSORBENCY_PRODUCTS[p.key].name}: {p.qty} × {ABSORBENCY_PRODUCTS[p.key].unitPrice.toFixed(2)} ₪ = {(p.qty * ABSORBENCY_PRODUCTS[p.key].unitPrice).toFixed(0)} ₪
+                      </p>
+                    ))}
+                    <p className="text-xs mt-1 border-t pt-1">
+                      סה״כ ÷ {safeLevel === 1 ? '302' : '241'} ₪/שע׳ = {absorbencyCost.toFixed(2)} שע׳
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">📦 אספקה חודשית עד הבית דרך ספק מורשה</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
 

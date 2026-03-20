@@ -2,8 +2,74 @@
 // All monetary values in NIS (New Israeli Shekel)
 
 // Value rates - CRITICAL: Level 1 has 1:1 ratio (no penalty)
-export const SERVICE_VALUE = 296; // NIS per hour if taken as service
+export const SERVICE_VALUE = 302; // NIS per hour - Level 1
+export const SERVICE_VALUE_2_6 = 241; // NIS per hour - Levels 2-6
 export const CASH_VALUE = 241; // NIS per hour if taken as cash (20% penalty)
+
+// ─── מוצרי ספיגה - טבלת BL/2625 ───────────────────────────────────────────
+// מחיר ליחידה לפי מסמך ביטוח לאומי (מחיר חישובי, לא מחיר לצרכן)
+export interface AbsorbencyProduct {
+  name: string;
+  unitPrice: number;  // ₪ ליחידה (BL2625)
+}
+
+export const ABSORBENCY_PRODUCTS: Record<string, AbsorbencyProduct> = {
+  diaper:    { name: 'חיתול ספיגה',        unitPrice: 1.01 },
+  brief:     { name: 'תחתון ספיגה',        unitPrice: 1.20 },
+  pad:       { name: 'פד ספיגה',           unitPrice: 0.55 },
+  sheet:     { name: 'סדין חד-פעמי',       unitPrice: 1.80 },
+  wipe:      { name: 'מגבון לח',           unitPrice: 0.15 },
+  glove:     { name: 'כפפה',               unitPrice: 0.10 },
+};
+
+// זכאות לפי רמה: מוצרים + כמות חודשית
+export interface AbsorbencyEntitlement {
+  label: string;
+  products: { key: keyof typeof ABSORBENCY_PRODUCTS; qty: number }[];
+}
+
+export const ABSORBENCY_BY_LEVEL: Record<number, AbsorbencyEntitlement> = {
+  1: {
+    label: 'חיתולים בסיסיים',
+    products: [{ key: 'diaper', qty: 60 }],
+  },
+  2: {
+    label: 'חיתולים בסיסיים',
+    products: [{ key: 'diaper', qty: 60 }],
+  },
+  3: {
+    label: 'חיתולים + מגבונים',
+    products: [{ key: 'diaper', qty: 90 }, { key: 'wipe', qty: 60 }],
+  },
+  4: {
+    label: 'ערכה מורחבת',
+    products: [{ key: 'diaper', qty: 120 }, { key: 'wipe', qty: 60 }, { key: 'glove', qty: 60 }],
+  },
+  5: {
+    label: 'ערכה מלאה',
+    products: [{ key: 'diaper', qty: 150 }, { key: 'wipe', qty: 90 }, { key: 'glove', qty: 60 }, { key: 'pad', qty: 30 }],
+  },
+  6: {
+    label: 'ערכה מלאה מורחבת',
+    products: [{ key: 'diaper', qty: 180 }, { key: 'wipe', qty: 90 }, { key: 'glove', qty: 60 }, { key: 'pad', qty: 60 }, { key: 'sheet', qty: 30 }],
+  },
+};
+
+/**
+ * מחשב עלות חודשית של מוצרי ספיגה לפי BL2625
+ * ומחזיר שעות ניכוי מהסל
+ */
+export const calcAbsorbencyHours = (level: number): number => {
+  const entitlement = ABSORBENCY_BY_LEVEL[level];
+  if (!entitlement) return 0;
+  const monthlyCost = entitlement.products.reduce((sum, p) => {
+    return sum + p.qty * ABSORBENCY_PRODUCTS[p.key].unitPrice;
+  }, 0);
+  // שווי שעת שירות לפי רמה
+  const hourValue = level === 1 ? SERVICE_VALUE : SERVICE_VALUE_2_6;
+  return Math.round((monthlyCost / hourValue) * 100) / 100; // עיגול ל-2 ספרות
+};
+// ────────────────────────────────────────────────────────────────────────────
 
 export interface LevelData {
   total_hours: number;
@@ -65,7 +131,7 @@ export const RATES: Rates = {
   daycare_high: 2.75,    // מרכז יום - Levels 4-6 deduction per visit (UPDATED)
   community: 0.5,        // קהילה תומכת - fixed deduction
   panic_button: 0.25,    // לחצן מצוקה
-  absorbency: 0          // מוצרי ספיגה - ללא ניכוי שעות, זכות נפרדת מחוץ לסל
+  absorbency: 0.5        // מוצרי ספיגה - ממוצע (מחושב דינמית לפי calcAbsorbencyHours)
 };
 
 export const ANCILLARY_RIGHTS: AncillaryRight[] = [
@@ -155,9 +221,9 @@ export const getDaycareRate = (level: number): number => {
   return level <= 3 ? RATES.daycare_low : RATES.daycare_high;
 };
 
-// CRITICAL: Level 1 has 1:1 ratio (no penalty)
+// CRITICAL: Level 1 has 1:1 ratio (no penalty), levels 2-6 use 241
 export const getCashValuePerHour = (level: number): number => {
-  return level === 1 ? SERVICE_VALUE : CASH_VALUE;
+  return level === 1 ? SERVICE_VALUE : SERVICE_VALUE_2_6;
 };
 
 // Calculate total basket value

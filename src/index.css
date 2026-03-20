@@ -126,7 +126,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.6;
   }
 
@@ -359,5 +359,20 @@
   /* RTL specific utilities */
   .rtl-flip {
     transform: scaleX(-1);
+  }
+}
+
+/* === Global responsive fix === */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-text-size-adjust: 100%;
+}
+
+
+/* === Responsive font-size: 16px mobile, 18px desktop === */
+@media (min-width: 768px) {
+  body {
+    font-size: 18px;
   }
 }

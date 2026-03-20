@@ -50,7 +50,7 @@ const WizardStepFour = () => {
   const panicDeduction = allocation.panicButton ? RATES.panic_button : 0;
   const absorbencyDeduction = allocation.absorbency ? RATES.absorbency : 0;
   
-  const totalDeductions = cashHoursDeduction + daycareDeduction + communityDeduction + panicDeduction + absorbencyDeduction;
+  const totalDeductions = cashHoursDeduction + daycareDeduction + communityDeduction + panicDeduction + absorbencyDeduction + allocation.caregiverHours;
   const remainingHours = Math.max(0, totalHours - totalDeductions);
   const totalCash = Math.round(allocation.cashHours * cashValuePerHour);
 
@@ -186,7 +186,12 @@ const WizardStepFour = () => {
                 המרה לכסף ({allocation.cashHours} שעות)
               </span>
             )}
-            {!allocation.daycareDays && !allocation.community && !allocation.panicButton && !allocation.absorbency && allocation.cashHours === 0 && (
+            {allocation.caregiverHours > 0 && (
+              <span className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                מטפלת בבית ({allocation.caregiverHours} שעות)
+              </span>
+            )}
+            {!allocation.daycareDays && !allocation.community && !allocation.panicButton && !allocation.absorbency && allocation.cashHours === 0 && allocation.caregiverHours === 0 && (
               <span className="text-muted-foreground">לא נבחרו שירותים נוספים</span>
             )}
           </div>

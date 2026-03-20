@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export interface Allocation {
   cashHours: number;
   daycareDays: number;     // מרכז יום
+  caregiverHours: number;  // מטפלת בבית
   community: boolean;       // קהילה תומכת
   panicButton: boolean;
   absorbency: boolean;
@@ -52,6 +53,7 @@ export interface NursingState {
 const initialAllocation: Allocation = {
   cashHours: 0,
   daycareDays: 0,
+  caregiverHours: 0,
   community: false,
   panicButton: false,
   absorbency: false,

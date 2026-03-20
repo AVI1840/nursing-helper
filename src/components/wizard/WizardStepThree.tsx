@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNursingStore } from '@/store/useNursingStore';
 import { Search, CheckCircle2, Sparkles } from 'lucide-react';
@@ -12,29 +12,38 @@ const steps = [
 
 const WizardStepThree = () => {
   const { nextStep } = useNursingStore();
+  const nextStepRef = useRef(nextStep);
   const [currentPhase, setCurrentPhase] = useState(0);
   const [completed, setCompleted] = useState(false);
 
+  // Keep ref up to date without re-triggering the effect
   useEffect(() => {
-    const timers: NodeJS.Timeout[] = [];
+    nextStepRef.current = nextStep;
+  }, [nextStep]);
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     steps.forEach((step, index) => {
       const timer = setTimeout(() => {
         setCurrentPhase(index);
         if (index === steps.length - 1) {
-          setTimeout(() => {
+          const t1 = setTimeout(() => {
             setCompleted(true);
-            setTimeout(() => {
-              nextStep();
+            const t2 = setTimeout(() => {
+              nextStepRef.current();
             }, 1000);
+            timers.push(t2);
           }, 1000);
+          timers.push(t1);
         }
       }, step.delay);
       timers.push(timer);
     });
 
     return () => timers.forEach(clearTimeout);
-  }, [nextStep]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <motion.div

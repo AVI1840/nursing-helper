@@ -175,7 +175,7 @@ const WizardStepOne = () => {
         >
           {/* Foreign Worker Toggle */}
           <div 
-            className="toggle-accessible"
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card cursor-pointer hover:bg-secondary/30 transition-colors"
             onClick={() => setHasForeignWorker(!hasForeignWorker)}
           >
             <div className="flex items-center gap-4 flex-1">
@@ -184,21 +184,20 @@ const WizardStepOne = () => {
               </div>
               <div>
                 <p className="font-semibold text-lg">מעסיקים עובד זר?</p>
-                <p className="text-muted-foreground">
-                  משפיע על אופן חלוקת הזכויות
-                </p>
+                <p className="text-muted-foreground text-sm">משפיע על אופן חלוקת הזכויות</p>
               </div>
             </div>
             <Switch
               checked={hasForeignWorker}
               onCheckedChange={setHasForeignWorker}
+              onClick={(e) => e.stopPropagation()}
               className="data-[state=checked]:bg-primary"
             />
           </div>
 
-          {/* Survivor Checkbox */}
+          {/* Survivor Toggle */}
           <div 
-            className="toggle-accessible"
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card cursor-pointer hover:bg-secondary/30 transition-colors"
             onClick={() => setIsSurvivor(!isSurvivor)}
           >
             <div className="flex items-center gap-4 flex-1">
@@ -207,14 +206,13 @@ const WizardStepOne = () => {
               </div>
               <div>
                 <p className="font-semibold text-lg">ניצול/ת שואה?</p>
-                <p className="text-muted-foreground">
-                  זכאות לתוספת 9 שעות מהקרן לרווחה
-                </p>
+                <p className="text-muted-foreground text-sm">זכאות לתוספת 9 שעות מהקרן לרווחה</p>
               </div>
             </div>
             <Switch
               checked={isSurvivor}
               onCheckedChange={setIsSurvivor}
+              onClick={(e) => e.stopPropagation()}
               className="data-[state=checked]:bg-primary"
             />
           </div>

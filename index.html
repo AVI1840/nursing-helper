@@ -28,7 +28,9 @@
         var p = params.get('p');
         if (p) {
           var q = params.get('q');
-          var restored = p + (q ? '?' + q : '') + window.location.hash;
+          // Must include the basename /nursing-helper for React Router
+          var base = '/nursing-helper';
+          var restored = base + p + (q ? '?' + q : '') + window.location.hash;
           window.history.replaceState(null, '', restored);
         }
       })();

@@ -203,6 +203,7 @@ const Wizard = () => {
               הצהרת נגישות
             </a>
           </p>
+          <p className="text-xs text-muted-foreground mt-1 opacity-50">עדכון אחרון: 24.03.2026</p>
         </div>
       </footer>
     </div>

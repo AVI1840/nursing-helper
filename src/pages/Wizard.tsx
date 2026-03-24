@@ -76,9 +76,9 @@ const Wizard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="py-6 px-4 border-b border-border bg-card">
+    <div className="min-h-screen bg-background" dir="rtl" lang="he">
+      {/* [BTL-ADAPTED] Semantic header landmark */}
+      <header className="py-6 px-4 border-b border-border bg-card" role="banner">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -166,15 +166,15 @@ const Wizard = () => {
         )}
       </header>
 
-      {/* Step Indicator */}
-      <div className="py-6 px-4 bg-card/50">
+      {/* [BTL-ADAPTED] Step Indicator with nav landmark */}
+      <nav className="py-6 px-4 bg-card/50" aria-label="שלבי האשף">
         <div className="max-w-5xl mx-auto">
           <StepIndicator />
         </div>
-      </div>
+      </nav>
 
-      {/* Main Content */}
-      <main className="py-8 px-4">
+      {/* [BTL-ADAPTED] Main content landmark with skip-nav target */}
+      <main id="main-content" className="py-8 px-4" role="main">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -188,14 +188,20 @@ const Wizard = () => {
         </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <footer className="py-6 px-4 border-t border-border bg-card mt-auto">
+      {/* [BTL-ADAPTED] Footer with accessibility statement */}
+      <footer className="py-6 px-4 border-t border-border bg-card mt-auto" role="contentinfo">
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-sm text-muted-foreground">
             © 2025 סיעוד 360 - כל הזכויות שמורות
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             המידע באתר מיועד להדרכה בלבד ואינו מהווה תחליף לייעוץ מקצועי
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            <a href="https://www.btl.gov.il/accessibility" target="_blank" rel="noopener noreferrer"
+              className="underline hover:text-primary focus-visible:text-primary">
+              הצהרת נגישות
+            </a>
           </p>
         </div>
       </footer>

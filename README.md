@@ -31,3 +31,13 @@ src/
 
 ---
 אביעד יצחקי, מינהל גמלאות | ביטוח לאומי | 2026
+
+
+---
+
+## 📄 ONE PAGER
+
+- [ONE PAGER (HTML)](https://avi1840.github.io/btl-projects-2026/html/nursing-helper.html)
+- [ONE PAGER (Word)](../one-pagers/word/08-nursing-helper.docx)
+- [פורטל כל הפרויקטים](https://avi1840.github.io/btl-projects-2026/)
+

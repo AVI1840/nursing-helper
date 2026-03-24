@@ -11,12 +11,12 @@ import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { calcAbsorbencyHours, ABSORBENCY_BY_LEVEL, ABSORBENCY_PRODUCTS } from '@/data/nursingData';
 
-const LEVEL_HOURS: Record<number, number> = { 1: 5.5, 2: 10, 3: 17, 4: 21, 5: 26, 6: 30 };
+import { getTotalHours } from '@/data/nursingData';
 
 const getDayCenterRate = (level: number): number => level <= 3 ? 2.0 : 2.75;
 
-const getCashCap = (level: number, totalHours: number): number =>
-  level === 1 ? totalHours : Math.floor(totalHours / 3);
+const getCashCap = (level: number, totalHours: number, hasForeignWorker: boolean): number =>
+  level === 1 || hasForeignWorker ? totalHours : Math.floor(totalHours / 3);
 
 const EXTRAS = { community: 0.5, panicButton: 0.25 };
 // מוצרי ספיגה - עלות מחושבת דינמית לפי BL2625 (calcAbsorbencyHours)
@@ -54,7 +54,7 @@ const CircularProgress = ({ percent, remaining, total }: { percent: number; rema
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="relative w-32 h-32">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128" role="img" aria-label={`${Math.round(percent)} אחוז מהתקציב מנוצל`}>
           <circle cx="64" cy="64" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="10" />
           <motion.circle
             cx="64" cy="64" r={radius} fill="none"
@@ -79,12 +79,12 @@ const CircularProgress = ({ percent, remaining, total }: { percent: number; rema
 };
 
 const WizardStepTwo = () => {
-  const { level, allocation, setAllocation, nextStep, prevStep } = useNursingStore();
+  const { level, hasForeignWorker, allocation, setAllocation, nextStep, prevStep } = useNursingStore();
 
   const safeLevel = level ?? 3;
-  const totalHours = LEVEL_HOURS[safeLevel] || 21;
+  const totalHours = getTotalHours(safeLevel, hasForeignWorker);
   const dayCenterRate = getDayCenterRate(safeLevel);
-  const cashCap = getCashCap(safeLevel, totalHours);
+  const cashCap = getCashCap(safeLevel, totalHours, hasForeignWorker);
 
   // ALL hooks before any conditional return
   const [dayCenterDays, setDayCenterDays] = useState(allocation.daycareDays || 0);
@@ -160,7 +160,7 @@ const WizardStepTwo = () => {
   };
 
   const handleContinue = () => {
-    setAllocation({ cashHours, daycareDays: dayCenterDays, caregiverHours, community, panicButton: panicButton || community, absorbency });
+    setAllocation({ cashHours, daycareDays: dayCenterDays, caregiverHours, community, panicButton: community ? false : panicButton, absorbency });
     nextStep();
   };
 
@@ -251,6 +251,26 @@ const WizardStepTwo = () => {
           </div>
         </motion.div>
 
+        {/* Foreign Worker Banner */}
+        {hasForeignWorker && safeLevel > 1 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-700 mb-8">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-blue-800 dark:text-blue-300">מעסיק עובד זר</p>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                  ניתן לקבל את מלוא הגמלה כתשלום ישיר (כסף) או לשלב שירותים בעין.
+                  <br />
+                  <span className="font-medium">אין מגבלת ⅓ על המרה לכסף.</span>
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* 3 Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
@@ -331,7 +351,9 @@ const WizardStepTwo = () => {
               </div>
               <div>
                 <h3 className="font-bold text-lg">קצבה בכסף</h3>
-                <p className="text-sm text-muted-foreground">ערך מופחת (כ-80%)</p>
+                <p className="text-sm text-muted-foreground">
+                  {safeLevel === 1 || hasForeignWorker ? 'ללא הפסד ערך' : 'ערך מופחת (כ-80%)'}
+                </p>
               </div>
             </div>
             <div className="flex items-center justify-center gap-4 mt-auto">
@@ -347,11 +369,15 @@ const WizardStepTwo = () => {
                 colorClass="bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 text-amber-700" />
             </div>
             <p className="text-center text-xs text-muted-foreground">
-              מקסימום: {cashCap} שע׳ {safeLevel > 1 && '(⅓ מהתקציב)'}
+              {hasForeignWorker
+                ? `מקסימום: ${cashCap} שע׳ (100% - עובד זר)`
+                : `מקסימום: ${cashCap} שע׳ ${safeLevel > 1 ? '(⅓ מהתקציב)' : ''}`}
             </p>
-            {safeLevel === 1 ? (
+            {safeLevel === 1 || hasForeignWorker ? (
               <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200">
-                <p className="text-xs text-emerald-800 dark:text-emerald-300 text-center">✨ ברמה 1 ניתן להמיר 100% לכסף</p>
+                <p className="text-xs text-emerald-800 dark:text-emerald-300 text-center">
+                  {safeLevel === 1 ? '✨ ברמה 1 ניתן להמיר 100% לכסף' : '✨ עם עובד זר ניתן להמיר 100% לכסף'}
+                </p>
               </div>
             ) : (
               <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 border border-amber-200">
@@ -388,7 +414,8 @@ const WizardStepTwo = () => {
                 <Switch checked={community}
                   onCheckedChange={(c) => handleExtraToggle('community', c)}
                   disabled={remainingHours < EXTRAS.community && !community}
-                  className="data-[state=checked]:bg-purple-500" />
+                  className="data-[state=checked]:bg-purple-500"
+                  aria-label="קהילה תומכת" />
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -420,13 +447,14 @@ const WizardStepTwo = () => {
                 <Switch checked={absorbency}
                   onCheckedChange={(c) => handleExtraToggle('absorbency', c)}
                   disabled={remainingHours < absorbencyCost && !absorbency}
-                  className="data-[state=checked]:bg-teal-500" />
+                  className="data-[state=checked]:bg-teal-500"
+                  aria-label="מוצרי ספיגה" />
               </div>
 
               {/* פירוט לפי רמה */}
               <div className="mt-2 p-3 rounded-lg bg-teal-50/80 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700">
                 <p className="text-xs font-semibold text-teal-800 dark:text-teal-300 mb-1.5">
-                  {ABSORBENCY_BY_LEVEL[safeLevel].label}
+                  {ABSORBENCY_BY_LEVEL[safeLevel].label} (סל קבוע לפי רמה)
                 </p>
                 <div className="flex flex-wrap gap-1 mb-2">
                   {ABSORBENCY_BY_LEVEL[safeLevel].products.map((p) => (
@@ -479,7 +507,8 @@ const WizardStepTwo = () => {
                 <Switch checked={panicButton || community}
                   onCheckedChange={(c) => !community && handleExtraToggle('panicButton', c)}
                   disabled={community || (remainingHours < EXTRAS.panicButton && !panicButton)}
-                  className="data-[state=checked]:bg-purple-500" />
+                  className="data-[state=checked]:bg-purple-500"
+                  aria-label="לחצן מצוקה" />
               </div>
               {community
                 ? <p className="text-xs text-muted-foreground italic">כלול בקהילה תומכת</p>
@@ -493,7 +522,8 @@ const WizardStepTwo = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
           className="flex items-center justify-between gap-4">
           <button onClick={prevStep}
-            className="py-3 px-6 rounded-xl border-2 border-border hover:bg-secondary text-muted-foreground font-semibold transition-colors">
+            className="py-3 px-6 rounded-xl border-2 border-border hover:bg-secondary text-muted-foreground font-semibold transition-colors"
+            aria-label="חזרה לשלב הקודם">
             חזרה
           </button>
           <div className="flex flex-col items-end gap-1">
@@ -503,7 +533,8 @@ const WizardStepTwo = () => {
             <button
               onClick={handleContinue}
               className="py-4 px-8 rounded-xl font-bold text-lg text-white flex items-center gap-2 transition-all hover:scale-105 cursor-pointer"
-              style={{ background: 'var(--gradient-hero)' }}>
+              style={{ background: 'var(--gradient-hero)' }}
+              aria-label="המשך לדף הסיכום">
               <span>המשך לסיכום</span>
               <ArrowLeft className="w-5 h-5" />
             </button>

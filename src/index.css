@@ -369,6 +369,35 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* [BTL-ADAPTED] Skip navigation link */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* [BTL-ADAPTED] Focus-visible on ALL interactive elements - 2px outline */
+*:focus-visible {
+  outline: 2px solid hsl(207 100% 32%);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* [BTL-ADAPTED] Minimum touch target 44x44px on mobile */
+@media (pointer: coarse) {
+  button, [role="button"], a, input, select, textarea, [tabindex="0"],
+  label, summary, [role="switch"], [role="checkbox"], [role="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 
 /* === Responsive font-size: 16px mobile, 18px desktop === */
 @media (min-width: 768px) {

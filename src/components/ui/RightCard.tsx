@@ -52,6 +52,7 @@ const RightCard = ({ right }: RightCardProps) => {
           <button
             onClick={() => setIsOpen(true)}
             className="flex items-center gap-1 text-primary font-medium hover:underline"
+            aria-label={`איך לממש את הזכות: ${right.title}`}
           >
             <span>איך לממש?</span>
             <ExternalLink className="w-4 h-4" />

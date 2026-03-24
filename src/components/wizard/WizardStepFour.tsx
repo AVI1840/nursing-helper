@@ -6,10 +6,13 @@ import {
   getTotalHours,
   getCashValuePerHour,
   getDaycareRate,
+  calcAbsorbencyHours,
+  ABSORBENCY_BY_LEVEL,
+  ABSORBENCY_PRODUCTS,
   AncillaryRight
 } from '@/data/nursingData';
 import RightCard from '@/components/ui/RightCard';
-import { ArrowRight, Sparkles, Clock, Banknote, Gift, RefreshCw, AlertTriangle, Award } from 'lucide-react';
+import { ArrowRight, Sparkles, Clock, Banknote, Gift, RefreshCw, AlertTriangle, Award, Package } from 'lucide-react';
 
 // Golden Card for 80+ age exemption
 const GOLDEN_CARD_80_PLUS: AncillaryRight = {
@@ -47,8 +50,8 @@ const WizardStepFour = () => {
   const cashHoursDeduction = allocation.cashHours;
   const daycareDeduction = allocation.daycareDays * daycareRate;
   const communityDeduction = allocation.community ? RATES.community : 0;
-  const panicDeduction = allocation.panicButton ? RATES.panic_button : 0;
-  const absorbencyDeduction = allocation.absorbency ? RATES.absorbency : 0;
+  const panicDeduction = (!allocation.community && allocation.panicButton) ? RATES.panic_button : 0;
+  const absorbencyDeduction = allocation.absorbency ? calcAbsorbencyHours(level) : 0;
   
   const totalDeductions = cashHoursDeduction + daycareDeduction + communityDeduction + panicDeduction + absorbencyDeduction + allocation.caregiverHours;
   const remainingHours = Math.max(0, totalHours - totalDeductions);
@@ -106,7 +109,7 @@ const WizardStepFour = () => {
           <span>הסיכום שלך</span>
         </motion.div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
-          {name ? `${name}, ` : ''}נמצאו לך זכויות נוספות! 🎉
+          {name ? `${name}, ` : ''}נמצאו לך זכויות נוספות! <span role="img" aria-label="חגיגה">🎉</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           בנוסף לגמלת הסיעוד, מצאנו עבורך זכויות נוספות בשווי אלפי שקלים
@@ -122,7 +125,7 @@ const WizardStepFour = () => {
         style={{ boxShadow: 'var(--shadow-md)' }}
       >
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <span className="text-xl">📋</span>
+          <span className="text-xl" role="img" aria-label="סיכום">📋</span>
           סיכום סל הסיעוד שלך
         </h3>
         <div className="grid md:grid-cols-3 gap-6">
@@ -177,9 +180,28 @@ const WizardStepFour = () => {
               </span>
             )}
             {allocation.absorbency && (
-              <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                מוצרי ספיגה
-              </span>
+              <div className="w-full mt-2 p-4 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-700">
+                <div className="flex items-center gap-2 mb-3">
+                  <Package className="w-5 h-5 text-teal-600" />
+                  <span className="font-semibold text-teal-800 dark:text-teal-300">
+                    מוצרי ספיגה — {ABSORBENCY_BY_LEVEL[level].label}
+                  </span>
+                  <span className="mr-auto text-xs font-medium text-teal-600 bg-teal-100 dark:bg-teal-900/50 px-2 py-0.5 rounded-full">
+                    -{calcAbsorbencyHours(level).toFixed(2)} שע׳
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {ABSORBENCY_BY_LEVEL[level].products.map((p) => (
+                    <div key={p.key} className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white dark:bg-teal-900/40 border border-teal-100 dark:border-teal-700">
+                      <span className="text-sm text-teal-800 dark:text-teal-200">{ABSORBENCY_PRODUCTS[p.key].name}</span>
+                      <span className="text-sm font-bold text-teal-600">×{p.qty}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-teal-600 dark:text-teal-400 mt-2">
+                  📦 עלות חודשית: ~{ABSORBENCY_BY_LEVEL[level].products.reduce((s, p) => s + p.qty * ABSORBENCY_PRODUCTS[p.key].unitPrice, 0).toFixed(0)} ₪ · אספקה חודשית עד הבית
+                </p>
+              </div>
             )}
             {allocation.cashHours > 0 && (
               <span className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-medium">
@@ -235,7 +257,7 @@ const WizardStepFour = () => {
         className="mb-6"
       >
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <span className="text-2xl">🎁</span>
+          <span className="text-2xl" role="img" aria-label="מתנה">🎁</span>
           זכויות נוספות שמגיעות לך
           <span className="text-lg font-normal text-muted-foreground mr-2">
             ({eligibleRights.length + (showGoldenCard ? 1 : 0)} זכויות)
@@ -303,6 +325,7 @@ const WizardStepFour = () => {
         <button
           onClick={prevStep}
           className="btn-accessible secondary gap-2"
+          aria-label="חזרה לשלב הקודם"
         >
           <ArrowRight className="w-5 h-5" />
           <span>חזרה לעריכה</span>
@@ -310,6 +333,7 @@ const WizardStepFour = () => {
         <button
           onClick={reset}
           className="btn-accessible primary gap-3"
+          aria-label="התחל מחדש את האשף"
         >
           <RefreshCw className="w-5 h-5" />
           <span>התחל מחדש</span>

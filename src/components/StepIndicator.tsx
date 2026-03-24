@@ -13,13 +13,13 @@ const StepIndicator = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-2 md:gap-4 mb-8">
+    <div className="flex items-center justify-center gap-2 md:gap-4 mb-8" role="list" aria-label="שלבי התהליך">
       {steps.map((step, index) => {
         const isCompleted = currentStep > step.number;
         const isActive = currentStep === step.number;
         
         return (
-          <div key={step.number} className="flex items-center">
+          <div key={step.number} className="flex items-center" role="listitem">
             <div className="flex flex-col items-center">
               <motion.div
                 className={`step-indicator ${
@@ -27,6 +27,8 @@ const StepIndicator = () => {
                 }`}
                 animate={isActive ? { scale: [1, 1.1, 1] } : {}}
                 transition={{ duration: 0.5 }}
+                aria-label={`שלב ${step.number}: ${step.label}${isCompleted ? ' - הושלם' : isActive ? ' - נוכחי' : ''}`}
+                aria-current={isActive ? 'step' : undefined}
               >
                 {isCompleted ? (
                   <Check className="w-5 h-5" />

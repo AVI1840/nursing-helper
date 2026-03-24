@@ -11,6 +11,7 @@ const WizardStepOne = () => {
     level, 
     hasForeignWorker, 
     isSurvivor,
+    age,
     setName,
     setLevel, 
     setHasForeignWorker, 
@@ -19,6 +20,8 @@ const WizardStepOne = () => {
   } = useNursingStore();
 
   const hasParams = name && level;
+  // ניצולי שואה - רלוונטי לגיל 79+ (כולל מי שנולד ב-1946 לאם שהייתה בהיריון בזמן השואה)
+  const showSurvivorOption = age === null || age >= 79;
 
   return (
     <motion.div
@@ -78,16 +81,19 @@ const WizardStepOne = () => {
         >
           <div className="space-y-4">
             <div>
-              <label className="flex items-center gap-2 font-medium text-foreground mb-2">
+              <label htmlFor="insured-name" className="flex items-center gap-2 font-medium text-foreground mb-2">
                 <User className="w-5 h-5 text-primary" />
                 שם המבוטח
               </label>
               <Input
+                id="insured-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="הזינו את שמכם"
                 className="h-14 text-lg"
                 dir="rtl"
+                aria-label="שם המבוטח"
+                aria-required="true"
               />
             </div>
           </div>
@@ -116,6 +122,7 @@ const WizardStepOne = () => {
                   transition={{ delay: 0.4 + index * 0.1 }}
                   onClick={() => setLevel(levelNum)}
                   className="level-card group"
+                  aria-label={`רמת סיעוד ${lvl} - ${data.total_hours} שעות שבועיות`}
                 >
                   <div className="flex flex-col items-center gap-3">
                     <div 
@@ -192,30 +199,34 @@ const WizardStepOne = () => {
               onCheckedChange={setHasForeignWorker}
               onClick={(e) => e.stopPropagation()}
               className="data-[state=checked]:bg-primary"
+              aria-label="מעסיקים עובד זר"
             />
           </div>
 
-          {/* Survivor Toggle */}
-          <div 
-            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card cursor-pointer hover:bg-secondary/30 transition-colors"
-            onClick={() => setIsSurvivor(!isSurvivor)}
-          >
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                <span className="text-2xl">🕯️</span>
+          {/* Survivor Toggle - only show if age >= 80 (or age unknown) */}
+          {showSurvivorOption && (
+            <div 
+              className="flex items-center justify-between p-4 rounded-xl border border-border bg-card cursor-pointer hover:bg-secondary/30 transition-colors"
+              onClick={() => setIsSurvivor(!isSurvivor)}
+            >
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                  <span className="text-2xl" role="img" aria-label="נר זיכרון">🕯️</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-lg">ניצול/ת שואה?</p>
+                  <p className="text-muted-foreground text-sm">זכאות לתוספת 9 שעות מהקרן לרווחה</p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-lg">ניצול/ת שואה?</p>
-                <p className="text-muted-foreground text-sm">זכאות לתוספת 9 שעות מהקרן לרווחה</p>
-              </div>
+              <Switch
+                checked={isSurvivor}
+                onCheckedChange={setIsSurvivor}
+                onClick={(e) => e.stopPropagation()}
+                className="data-[state=checked]:bg-primary"
+                aria-label="ניצול או ניצולת שואה"
+              />
             </div>
-            <Switch
-              checked={isSurvivor}
-              onCheckedChange={setIsSurvivor}
-              onClick={(e) => e.stopPropagation()}
-              className="data-[state=checked]:bg-primary"
-            />
-          </div>
+          )}
         </motion.div>
       )}
 
@@ -230,6 +241,7 @@ const WizardStepOne = () => {
           <button
             onClick={nextStep}
             className="btn-accessible primary gap-3 text-lg px-10"
+            aria-label="המשך לתכנון סל הסיעוד"
           >
             <span>המשך לתכנון הסל</span>
             <ArrowLeft className="w-5 h-5" />

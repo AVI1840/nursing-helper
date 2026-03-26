@@ -352,7 +352,7 @@ const WizardStepTwo = () => {
               <div>
                 <h3 className="font-bold text-lg">קצבה בכסף</h3>
                 <p className="text-sm text-muted-foreground">
-                  {safeLevel === 1 || hasForeignWorker ? 'ללא הפסד ערך' : 'ערך מופחת (כ-80%)'}
+                  {safeLevel === 1 ? 'ללא הפסד ערך' : 'עד ⅓ מהתקציב'}
                 </p>
               </div>
             </div>

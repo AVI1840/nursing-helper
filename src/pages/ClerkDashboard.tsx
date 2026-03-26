@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Copy, Check, Send, User, Hash, Users, Calendar, ArrowLeft, AlertCircle, Activity } from 'lucide-react';
+import { Heart, Copy, Check, Send, User, Hash, Users, Calendar, ArrowLeft, AlertCircle, Activity, MapPin } from 'lucide-react';
 import { LEVELS } from '@/data/nursingData';
 import { 
   Select,
@@ -32,6 +32,27 @@ const ClerkDashboard = () => {
   const [age, setAge] = useState('');
   const [eligibilityType, setEligibilityType] = useState<'permanent' | 'temporary'>('permanent');
   const [dependencyScore, setDependencyScore] = useState('');
+  const [city, setCity] = useState('');
+
+  // Auto-calculate age from year of birth
+  useEffect(() => {
+    if (yearOfBirth) {
+      const currentYear = new Date().getFullYear();
+      const calculatedAge = currentYear - parseInt(yearOfBirth, 10);
+      setAge(calculatedAge.toString());
+    }
+  }, [yearOfBirth]);
+
+  // Score range hint based on level
+  const SCORE_RANGES: Record<string, string> = {
+    '1': '2.5 – 3.5',
+    '2': '3.5 – 4.5',
+    '3': '4.5 – 6.5',
+    '4': '6.5 – 7.5',
+    '5': '7.5 – 8.5',
+    '6': '8.5 – 9.5',
+  };
+  const scoreHint = level ? SCORE_RANGES[level] : '';
 
   const baseUrl = `${window.location.origin}/nursing-helper`;
   
@@ -191,22 +212,32 @@ const ClerkDashboard = () => {
                 </p>
               </div>
 
-              {/* NEW: Age Input */}
+              {/* Age - Auto-calculated from year of birth */}
+              {yearOfBirth && (
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-700">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-emerald-600" />
+                    <span className="font-medium text-emerald-800 dark:text-emerald-300">גיל מחושב: {age}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* City / Location */}
               <div className="space-y-2">
                 <label className="flex items-center gap-2 font-medium text-foreground">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  גיל
+                  <MapPin className="w-5 h-5 text-primary" />
+                  מקום מגורים
                 </label>
                 <Input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="לדוגמה: 82"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="לדוגמה: תל אביב"
                   className="h-14 text-lg"
-                  dir="ltr"
-                  min={60}
-                  max={120}
+                  dir="rtl"
                 />
+                <p className="text-sm text-muted-foreground">
+                  להתאמת שירותים וסניפים באזור המגורים
+                </p>
               </div>
 
               {/* NEW: Eligibility Type */}
@@ -265,7 +296,9 @@ const ClerkDashboard = () => {
                   max={10}
                 />
                 <p className="text-sm text-muted-foreground">
-                  טווח: 0.0 - 10.0 (ספי רמות: 3.5, 4.5, 6.5, 7.5, 8.5, 9.5)
+                  {scoreHint
+                    ? `טווח צפוי לרמה ${level}: ${scoreHint}`
+                    : 'טווח: 0.0 - 10.0 (ספי רמות: 3.5, 4.5, 6.5, 7.5, 8.5, 9.5)'}
                 </p>
               </div>
 

@@ -138,12 +138,12 @@ export const ANCILLARY_RIGHTS: AncillaryRight[] = [
   {
     id: 'water',
     title: 'הנחה בחשבון המים',
-    description: 'תוספת של 3.5 מ"ק מים בתעריף הנמוך (כפול לחודשיים).',
+    description: 'תוספת של 3.5 מ"ק מים בתעריף הנמוך לכל תקופת חיוב (חודשיים).',
     value: 'כ-400 ₪ בשנה',
     min_level: 1,
     requires_survivor: false,
     requires_foreign_worker: false,
-    action: 'מתעדכן אוטומטית מול תאגיד המים',
+    action: 'ההנחה מתעדכנת אוטומטית מול תאגיד המים לאחר אישור הזכאות בביטוח לאומי. אם לא מופיעה בחשבון, יש לפנות לתאגיד המים המקומי עם אישור זכאות.',
     icon: 'Droplet'
   },
   {
@@ -154,51 +154,51 @@ export const ANCILLARY_RIGHTS: AncillaryRight[] = [
     min_level: 1,
     requires_survivor: false,
     requires_foreign_worker: false,
-    action: 'הגשת טופס לרשות המקומית',
+    action: 'יש להגיש טופס בקשה להנחה במחלקת הארנונה ברשות המקומית, בצירוף אישור זכאות מביטוח לאומי. ההנחה משתנה בין רשויות.',
     icon: 'Home'
   },
   {
     id: 'electricity',
     title: 'הנחה בחשבון החשמל',
-    description: '50% הנחה על צריכה של עד 400 קוט"ש בחודש.',
+    description: 'הנחה של 50% על צריכת חשמל עד 400 קוט"ש לחודש, לזכאי גמלת סיעוד ברמה 4 ומעלה.',
     value: 'כ-1,200 ₪ בשנה',
-    min_level: 3,
+    min_level: 4,
     requires_survivor: false,
     requires_foreign_worker: false,
-    action: 'מתעדכן אוטומטית (יש לבדוק בחשבונית)',
+    action: 'ההנחה מועברת אוטומטית לחברת החשמל. יש לוודא שההנחה מופיעה בחשבונית. אם לא — לפנות לחברת החשמל עם אישור זכאות.',
     icon: 'Zap'
   },
   {
     id: 'survivor_hours',
-    title: 'תוספת 9 שעות לניצולי שואה',
-    description: 'זכאות ל-9 שעות סיעוד נוספות מהקרן לרווחה לנפגעי השואה.',
+    title: 'תוספת שעות לניצולי שואה',
+    description: 'זכאות לעד 9 שעות סיעוד נוספות בשבוע מהקרן לרווחה לנפגעי השואה, בנוסף לגמלת הסיעוד.',
     value: 'שווי כ-2,500 ₪ בחודש',
     min_level: 1,
     requires_survivor: true,
     requires_foreign_worker: false,
-    action: 'פנייה לקרן לרווחה',
+    action: 'יש לפנות לקרן לרווחה נפגעי השואה בטלפון 03-5682651 או דרך אתר הקרן. נדרש אישור ניצול שואה ואישור זכאות סיעוד.',
     icon: 'HeartHandshake'
   },
   {
     id: 'worker_permit',
     title: 'פטור מאגרת עובד זר',
-    description: 'פטור מלא או חלקי מתשלום אגרה שנתית ואגרת בקשה.',
-    value: 'חיסכון של מאות שקלים',
+    description: 'פטור מלא או חלקי מתשלום אגרה שנתית ואגרת בקשה להעסקת עובד זר בסיעוד.',
+    value: 'חיסכון של מאות שקלים בשנה',
     min_level: 1,
     requires_survivor: false,
     requires_foreign_worker: true,
-    action: 'הסדרה מול רשות האוכלוסין',
+    action: 'יש להסדיר מול רשות האוכלוסין וההגירה. ניתן להגיש בקשה באתר gov.il או בסניפי הרשות.',
     icon: 'Passport'
   },
   {
     id: 'drugs_ceiling',
-    title: 'תקרה לתשלום על תרופות',
-    description: 'פטור מתשלום עבור תרופות מעבר לתקרה חודשית בקופת חולים.',
-    value: 'משתנה',
+    title: 'תקרת תשלום לתרופות',
+    description: 'פטור מתשלום השתתפות עצמית על תרופות מעבר לתקרה חודשית מופחתת בקופת החולים.',
+    value: 'משתנה לפי קופה וצריכה',
     min_level: 1,
     requires_survivor: false,
     requires_foreign_worker: false,
-    action: 'אוטומטי בקופת החולים',
+    action: 'ההטבה מופעלת אוטומטית בקופת החולים. מומלץ לוודא עם הרוקח או נציג הקופה שהתקרה המופחתת חלה.',
     icon: 'Pill'
   }
 ];

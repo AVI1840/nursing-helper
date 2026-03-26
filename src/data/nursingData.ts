@@ -162,7 +162,7 @@ export const ANCILLARY_RIGHTS: AncillaryRight[] = [
     title: 'הנחה בחשבון החשמל',
     description: 'הנחה של 50% על צריכת חשמל עד 400 קוט"ש לחודש, לזכאי גמלת סיעוד ברמה 4 ומעלה.',
     value: 'כ-1,200 ₪ בשנה',
-    min_level: 4,
+    min_level: 5,
     requires_survivor: false,
     requires_foreign_worker: false,
     action: 'ההנחה מועברת אוטומטית לחברת החשמל. יש לוודא שההנחה מופיעה בחשבונית. אם לא — לפנות לחברת החשמל עם אישור זכאות.',

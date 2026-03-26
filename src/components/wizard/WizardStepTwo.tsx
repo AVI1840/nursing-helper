@@ -373,15 +373,11 @@ const WizardStepTwo = () => {
                 ? `מקסימום: ${cashCap} שע׳ (100% - עובד זר)`
                 : `מקסימום: ${cashCap} שע׳ ${safeLevel > 1 ? '(⅓ מהתקציב)' : ''}`}
             </p>
-            {safeLevel === 1 || hasForeignWorker ? (
+            {(safeLevel === 1 || hasForeignWorker) && (
               <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200">
                 <p className="text-xs text-emerald-800 dark:text-emerald-300 text-center">
                   {safeLevel === 1 ? '✨ ברמה 1 ניתן להמיר 100% לכסף' : '✨ עם עובד זר ניתן להמיר 100% לכסף'}
                 </p>
-              </div>
-            ) : (
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 border border-amber-200">
-                <p className="text-xs text-amber-800 dark:text-amber-300 text-center">⚠️ בהמרה לכסף ערך הגמלה נמוך ב-20%</p>
               </div>
             )}
           </motion.div>
